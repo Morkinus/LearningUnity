@@ -14,32 +14,46 @@ public class PlayerController : MonoBehaviour {
 
 	[SerializeField] private GameObject head;
 	[SerializeField] private GameObject torso;
+
+	//Left arm object and variables belonging to this object
 	[SerializeField] private GameObject leftArm;
+	float leftArmSwingAngle;
+	bool leftArmSwingForward = true;
+
+	//Left leg object and variables belonging to this object
 	[SerializeField] private GameObject leftLeg;
+	float leftLegSwingAngle;
+	bool leftLegSwingForward = false;
+
+	//Right arm object and variabled belonging to this object
 	[SerializeField] private GameObject rightArm;
+	float rightArmSwingAngle;
+	bool rightArmSwingForward = false;
+
+	//Right leg object and variables belonging to this object
 	[SerializeField] private GameObject rightLeg;
+	float rightLegSwingAngle;
+	bool rightSwingForward = true;
+
 
 	//#####################################################################
 
+	//Keeps a track of whether the humanoid is moving or not
 	bool isMoving;
-	float leftLegSwingAngle;
-	float rightLegSwingAngle;
-	bool leftSwingingForward = false;
-	bool rightSwingingForward = true;
+
+	//Flag for resseting body parts
 	bool reset = false;
 
+	Vector3 armSwingPointOffset;
+	Vector3 legSwingPointOffset;
+
 	const int LegSwing = 20;
-	const int multiplier = 140;
-	Vector3 LeftLegOffset = new Vector3 (0.2f, 0.9f, 0);
+	const int Multiplier = 120;
 
 	void Start()
 	{
-		Debug.Log (leftLeg.transform.position + "   " + leftLeg.transform.parent.position);
-//		Debug.Log (rightLeg.transform.position + "   " + rightLeg.transform.parent.position);
-		Debug.Log (leftLeg.transform.parent.position - leftLeg.transform.position);
-//		Debug.Log (rightLeg.transform.parent.position - rightLeg.transform.position);
-
-
+		armSwingPointOffset = new Vector3 (0f, 0.4f, 0f);
+		legSwingPointOffset = new Vector3 (0f, -0.5f, 0f);
 	}
 	// Update is called once per frame
 	void Update () {
@@ -55,127 +69,116 @@ public class PlayerController : MonoBehaviour {
 			isMoving = false;
 		}
 
-		//TODO: set movement for other body parts
-		//?? Create separate class to handle this movement based on passed parameters??
-		//set body parts to starting position when humanoid is not moving
+	
+		//TODO: Create separate class to handle this movement based on passed parameters??
+		//TODO: Set head turning ability. ?? Make camera follow mouse cursor ?? Rotate character to camera rotation only when RMB is pressed ??
 
 
 		if (isMoving) {
 
 			//Left leg movement
-			if (leftLegSwingAngle > -LegSwing && leftSwingingForward == false) {
-				leftLeg.transform.RotateAround (leftLeg.transform.parent.position, leftLeg.transform.parent.right, Time.deltaTime * multiplier);
-				leftLegSwingAngle -= Time.deltaTime * multiplier;
+			if (leftLegSwingAngle > -LegSwing && leftLegSwingForward == false) {
+				leftLeg.transform.RotateAround (leftLeg.transform.parent.position + legSwingPointOffset, leftLeg.transform.parent.right, Time.deltaTime * Multiplier);
+				leftLegSwingAngle -= Time.deltaTime * Multiplier;
 			} else if (leftLegSwingAngle <= -LegSwing) {
-				leftSwingingForward = true;
+				leftLegSwingForward = true;
 			}
 
-			if (leftLegSwingAngle < LegSwing && leftSwingingForward) {
-				leftLeg.transform.RotateAround (leftLeg.transform.parent.position, leftLeg.transform.parent.right, -Time.deltaTime * multiplier);
-				leftLegSwingAngle += Time.deltaTime * multiplier;
+			if (leftLegSwingAngle < LegSwing && leftLegSwingForward) {
+				leftLeg.transform.RotateAround (leftLeg.transform.parent.position + legSwingPointOffset, leftLeg.transform.parent.right, -Time.deltaTime * Multiplier);
+				leftLegSwingAngle += Time.deltaTime * Multiplier;
 			} else if (leftLegSwingAngle >= LegSwing) {
-				leftSwingingForward = false;
+				leftLegSwingForward = false;
 			}
 
 			//Right leg movement
-			if (rightLegSwingAngle > -LegSwing && rightSwingingForward) {
-				rightLeg.transform.RotateAround (rightLeg.transform.parent.position, rightLeg.transform.parent.right, -Time.deltaTime * multiplier);
-				rightLegSwingAngle -= Time.deltaTime * multiplier;
+			if (rightLegSwingAngle > -LegSwing && rightSwingForward) {
+				rightLeg.transform.RotateAround (rightLeg.transform.parent.position + legSwingPointOffset, rightLeg.transform.parent.right, -Time.deltaTime * Multiplier);
+				rightLegSwingAngle -= Time.deltaTime * Multiplier;
 			} else if (rightLegSwingAngle <= -LegSwing) {
-				rightSwingingForward = false;
+				rightSwingForward = false;
 			}
 
-			if (rightLegSwingAngle < LegSwing && rightSwingingForward == false) {
-				rightLeg.transform.RotateAround (rightLeg.transform.parent.position, rightLeg.transform.parent.right, Time.deltaTime * multiplier);
-				rightLegSwingAngle += Time.deltaTime * multiplier;
+			if (rightLegSwingAngle < LegSwing && rightSwingForward == false) {
+				rightLeg.transform.RotateAround (rightLeg.transform.parent.position + legSwingPointOffset, rightLeg.transform.parent.right, Time.deltaTime * Multiplier);
+				rightLegSwingAngle += Time.deltaTime * Multiplier;
 			} else if (rightLegSwingAngle >= LegSwing) {
-				rightSwingingForward = true;
+				rightSwingForward = true;
 			}
 
 			//Left Arm movement
+			if (leftArmSwingAngle < LegSwing && leftArmSwingForward) {
+				leftArm.transform.RotateAround (leftArm.transform.parent.position + armSwingPointOffset, leftArm.transform.parent.right, -Time.deltaTime * Multiplier);
+				leftArmSwingAngle += Time.deltaTime * Multiplier;
+			} else if (leftArmSwingAngle >= LegSwing) {
+				leftArmSwingForward = false;
+			}
+
+			if (leftArmSwingAngle > -LegSwing && leftArmSwingForward == false) {
+				leftArm.transform.RotateAround (leftArm.transform.parent.position + armSwingPointOffset, leftArm.transform.parent.right, Time.deltaTime * Multiplier);
+				leftArmSwingAngle -= Time.deltaTime * Multiplier;
+			} else if (leftArmSwingAngle <= LegSwing) {
+				leftArmSwingForward = true;
+			}
+
+			//Right Arm movement
+			if (rightArmSwingAngle > -LegSwing && rightArmSwingForward == false) {
+				rightArm.transform.RotateAround (rightArm.transform.parent.position + armSwingPointOffset, rightArm.transform.parent.right, Time.deltaTime * Multiplier);
+				rightArmSwingAngle -= Time.deltaTime * Multiplier;
+			} else if (rightArmSwingAngle <= LegSwing) {
+				rightArmSwingForward = true;
+			}
+
+			if (rightArmSwingAngle < LegSwing && rightArmSwingForward) {
+				rightArm.transform.RotateAround (rightArm.transform.parent.position + armSwingPointOffset, rightArm.transform.parent.right, -Time.deltaTime * Multiplier);
+				rightArmSwingAngle += Time.deltaTime * Multiplier;
+			} else if (rightArmSwingAngle >= LegSwing) {
+				rightArmSwingForward = false;
+			}
+
 
 			//While humanoid is moving, reset is set to true; to mimic standing still pose when movement stops
 			reset = true;
 		
 		}
 		else if(reset) {
-
-			//Left 		leg gets reset when humanoid stops moving
-			leftLeg.transform.localRotation = Quaternion.identity;
-			leftLeg.transform.localPosition = new Vector3(-0.2f,-0.9f,0);
-			leftLegSwingAngle = 0f;
-			leftSwingingForward = false;
-
-			//Right leg gets reset when humanoid stops moving
-
-			rightLeg.transform.localRotation = Quaternion.identity;	
-			rightLeg.transform.localPosition = new Vector3(0.2f,-0.9f,0);
-			rightLegSwingAngle = 0f;
-			rightSwingingForward = true;
-
-			//This line prevent reset to be called each frame. Reset happens only when humanoid stops moving
-			reset = false;
+			Reset ();
 		}
+	}
+
+	void Reset()
+	{
+	
+		//Left leg gets reset when humanoid stops moving
+		leftLeg.transform.localRotation = Quaternion.identity;
+		leftLeg.transform.localPosition = new Vector3(-0.225f,-0.9f,0);
+		leftLegSwingAngle = 0f;
+		leftLegSwingForward = false;
+
+		//Right leg gets reset when humanoid stops moving
+
+		rightLeg.transform.localRotation = Quaternion.identity;	
+		rightLeg.transform.localPosition = new Vector3(0.225f,-0.9f,0);
+		rightLegSwingAngle = 0f;
+		rightSwingForward = true;
+
+		//Left arm get reset when humanoid stops moving
+
+		leftArm.transform.localRotation = Quaternion.identity;
+		leftArm.transform.localPosition = new Vector3 (-0.55f, 0.1f, 0);
+		leftArmSwingAngle = 0f;
+		leftArmSwingForward = true;
+
+		//Right arm get reset when humanoid stops moving
+
+		rightArm.transform.localRotation = Quaternion.identity;
+		rightArm.transform.localPosition = new Vector3 (0.55f, 0.1f, 0);
+		rightArmSwingAngle = 0f;
+		rightArmSwingForward = false;
+
+		//This line prevents reset to be called each frame. Reset happens only when humanoid stops moving
+		reset = false;
+
 	}
 }
 
-//[RequireComponent(typeof(CharacterController))]
-//
-//public class PlayerController : MonoBehaviour {
-//
-//    public Transform cam;
-//    public float speed = 5f;
-//    public float turnSpeed = 2f;
-//
-//    float movementX;
-//    float movementZ;
-//
-//    private CharacterController controller;
-//    
-//    // Use this for initialization
-//	void Start () {
-//        controller = GetComponent<CharacterController>();
-//	}
-//	
-//	// Update is called once per frame
-//	void Update () {
-//        movementX = Input.GetAxis("Horizontal") * speed;
-//        movementZ = Input.GetAxis("Vertical") * speed;
-//        Vector3 move = new Vector3(movementX, 0, movementZ);
-//        
-//        move = Vector3.ClampMagnitude(move, speed);
-//        move *= Time.deltaTime;
-//        controller.Move(move);
-//		controller.transform.rotation = cam.localRotation;
-//        
-//		Debug.Log (cam.localRotation);
-//
-////        if (Input.GetKey(KeyCode.D))
-////        {
-////            //transform.Rotate(Vector3.Lerp(Vector3.forward,Vector3.right,turnSpeed));
-////            transform.position += (Vector3.right + transform.forward/2) * Time.deltaTime * speed;
-////            transform.Rotate(new Vector3(0, turnSpeed, 0));
-////            
-////        }
-////        if (Input.GetKey(KeyCode.A))
-////        {
-////            //transform.Rotate(Vector3.Lerp(Vector3.forward,Vector3.right,turnSpeed));
-////            transform.position -= Vector3.right * Time.deltaTime * speed;
-////            transform.Rotate(new Vector3(0, -turnSpeed, 0));
-////
-////        }
-////        if (Input.GetKey(KeyCode.W))
-////        {
-////            //transform.Rotate(Vector3.Lerp(Vector3.forward,Vector3.right,turnSpeed));
-////            transform.position += transform.forward * Time.deltaTime * speed;
-////
-////        }
-////        if (Input.GetKey(KeyCode.S))
-////        {
-////            //transform.Rotate(Vector3.Lerp(Vector3.forward,Vector3.right,turnSpeed));
-////            transform.position -= transform.forward * Time.deltaTime * speed;
-////
-////        }
-//
-//   }
-//}
