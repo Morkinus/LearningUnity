@@ -50,6 +50,8 @@ Temporary Items
 ## UNITY 
 ####################
 
+Procedural_Content_Generation/
+Unity_AI/
 Library/
 Temp/
 *.csproj
