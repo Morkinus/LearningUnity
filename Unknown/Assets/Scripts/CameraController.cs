@@ -6,7 +6,7 @@ public class CameraController : MonoBehaviour {
 	public GameObject target;
 	public float rotationSpeed = 5f;
 	public float rotationXMin = -20f;
-	public float rotationXMax = 40f;
+	public float rotationXMax = 20f;
 
 	//TODO: ?? Ability to zoom camera in and out
 

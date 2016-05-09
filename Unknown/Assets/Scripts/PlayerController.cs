@@ -4,10 +4,44 @@ using System.Collections;
 public class PlayerController : MonoBehaviour {
 
 	public GameObject cam;
-	public float movementSpeed = 5f;
+	public Rigidbody rigidBody;
+	public Collider col;
+
+	float distanceToGround;
+
+	#region MOVEMENT
+	float gravity = -10f;
+	float terminalVelocity = -15f;
+	float verticalSpeed;
+	float minfall = -1f;
+	Vector3 movement;
+
+	float movementSpeed = 5f;
+	public float MovementSpeed {
+		get {
+			return movementSpeed;
+		}
+		set {
+			movementSpeed = value;
+		}
+	}
+
+	float jumpSpeed;
+	public float JumpSpeed {
+		get {
+			return jumpSpeed;
+		}
+		set {
+			jumpSpeed = value;
+		}
+	}
+
 	public float turningSpeed = 60f;
+	float camRotation;
 
+	#endregion
 
+	#region BODY_PARTS
 	//#####################################################################
 	//##################### HUMANOID BODY PARTS ###########################
 	//#####################################################################
@@ -35,8 +69,8 @@ public class PlayerController : MonoBehaviour {
 	float rightLegSwingAngle;
 	bool rightSwingForward = true;
 
-
 	//#####################################################################
+	#endregion
 
 	//Keeps a track of whether the humanoid is moving or not
 	bool isMoving;
@@ -52,22 +86,46 @@ public class PlayerController : MonoBehaviour {
 
 	void Start()
 	{
+		rigidBody = GetComponent<Rigidbody> ();
+		col = GetComponent<Collider> ();
+		movement = new Vector3 ();
 		armSwingPointOffset = new Vector3 (0f, 0.4f, 0f);
 		legSwingPointOffset = new Vector3 (0f, -0.5f, 0f);
+
+		JumpSpeed = 10;
+		distanceToGround = col.bounds.extents.y;
 	}
 	// Update is called once per frame
 	void Update () {
-		float horizontal = Input.GetAxisRaw ("Horizontal") * movementSpeed * Time.deltaTime;
-		float vertical = Input.GetAxisRaw ("Vertical") * movementSpeed * Time.deltaTime;
-		transform.Translate (horizontal, 0, vertical);
-		float camRotation = cam.transform.rotation.eulerAngles.y;
-		transform.Rotate (Vector3.up, camRotation - transform.rotation.eulerAngles.y);
+		float horizontal = Input.GetAxisRaw ("Horizontal") * MovementSpeed * Time.deltaTime;
+		float vertical = Input.GetAxisRaw ("Vertical") * MovementSpeed * Time.deltaTime;
+		camRotation = cam.transform.rotation.eulerAngles.y;
+		if (IsGrounded()) {
+			if (Input.GetKeyDown (KeyCode.Space)) {
+				verticalSpeed = JumpSpeed;
+			} else {
+				verticalSpeed = 0;
+			}
+		} else {
+			verticalSpeed += gravity * Time.deltaTime;
+			if (verticalSpeed < terminalVelocity) {
+				verticalSpeed = terminalVelocity;
+			}
+		}
+		movement.y = verticalSpeed * Time.deltaTime;
+		movement.x = horizontal;
+		movement.z = vertical;
+
+		transform.Translate (movement);
+
+		//Debug.Log (IsGrounded ());
 
 		if (horizontal != 0 || vertical != 0) {
 			isMoving = true;		
 		} else {
 			isMoving = false;
 		}
+
 
 	
 		//TODO: Create separate class to handle this movement based on passed parameters??
@@ -146,6 +204,11 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
+	void LateUpdate()
+	{
+		transform.Rotate (Vector3.up, camRotation - transform.rotation.eulerAngles.y);
+	}
+		
 	void Reset()
 	{
 	
@@ -178,6 +241,13 @@ public class PlayerController : MonoBehaviour {
 
 		//This line prevents reset to be called each frame. Reset happens only when humanoid stops moving
 		reset = false;
+
+	}
+
+	bool IsGrounded()
+	{
+		Debug.Log (distanceToGround + 0.1f + "   " + transform.position);
+		return Physics.Raycast (transform.position, -Vector3.up, distanceToGround + 0.3f);
 
 	}
 }
