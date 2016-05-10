@@ -5,16 +5,18 @@ public class PlayerController : MonoBehaviour {
 
 	public GameObject cam;
 	public Rigidbody rigidBody;
-	public Collider col;
-
-	float distanceToGround;
 
 	#region MOVEMENT
-	float gravity = -10f;
+	float gravity = -11.11f;
 	float terminalVelocity = -15f;
 	float verticalSpeed;
 	float minfall = -1f;
 	Vector3 movement;
+
+	float startingHeight;
+
+	float distanceToGround;
+	RaycastHit hitInfo;
 
 	float movementSpeed = 5f;
 	public float MovementSpeed {
@@ -77,7 +79,7 @@ public class PlayerController : MonoBehaviour {
 
 	//Flag for resseting body parts
 	bool reset = false;
-
+	bool grounded;
 	Vector3 armSwingPointOffset;
 	Vector3 legSwingPointOffset;
 
@@ -87,36 +89,68 @@ public class PlayerController : MonoBehaviour {
 	void Start()
 	{
 		rigidBody = GetComponent<Rigidbody> ();
-		col = GetComponent<Collider> ();
 		movement = new Vector3 ();
 		armSwingPointOffset = new Vector3 (0f, 0.4f, 0f);
 		legSwingPointOffset = new Vector3 (0f, -0.5f, 0f);
-
+		distanceToGround = transform.position.y;
 		JumpSpeed = 10;
-		distanceToGround = col.bounds.extents.y;
+
 	}
 	// Update is called once per frame
 	void Update () {
 		float horizontal = Input.GetAxisRaw ("Horizontal") * MovementSpeed * Time.deltaTime;
 		float vertical = Input.GetAxisRaw ("Vertical") * MovementSpeed * Time.deltaTime;
 		camRotation = cam.transform.rotation.eulerAngles.y;
-		if (IsGrounded()) {
-			if (Input.GetKeyDown (KeyCode.Space)) {
-				verticalSpeed = JumpSpeed;
-			} else {
-				verticalSpeed = 0;
-			}
+//		if (IsGrounded()) {
+//			Debug.Log (hitInfo);
+//			if (Input.GetKeyDown (KeyCode.Space)) {
+//				verticalSpeed = JumpSpeed;
+//			} else {
+//				verticalSpeed = 0;
+//			}
+//		} else {
+//			verticalSpeed += gravity * Time.deltaTime;
+//			if (verticalSpeed < terminalVelocity) {
+//				verticalSpeed = terminalVelocity;
+//			}
+//		}
+//		movement.y = verticalSpeed * Time.deltaTime;
+		Physics.Raycast (transform.position, -Vector3.up, out hitInfo, distanceToGround + 0.2f);
+		if (hitInfo.transform) {
+			grounded = hitInfo.transform.tag == "Ground" ? true : false;
 		} else {
-			verticalSpeed += gravity * Time.deltaTime;
-			if (verticalSpeed < terminalVelocity) {
-				verticalSpeed = terminalVelocity;
-			}
+			//Debug.Log ("slsalallsa");
+			grounded = false;
 		}
+		if (Input.GetKeyDown (KeyCode.Space) && grounded) {
+			Debug.Log ("Hit distance: " + hitInfo.distance + "Hit point: " + hitInfo.point + "Hit tag: " + hitInfo.transform.tag + "Hit collider: " + hitInfo.collider);
+			startingHeight = transform.position.y;
+			verticalSpeed = 5;
+		} else {
+			verticalSpeed = 0;
+		}
+//		if (verticalSpeed != 0 ) {
+//
+//			verticalSpeed += gravity * Time.deltaTime;
+//			if(verticalSpeed < terminalVelocity)
+//			{
+//				verticalSpeed = terminalVelocity;
+//			}
+//		
+//		}
+//		if (transform.position.y < startingHeight) {
+//			verticalSpeed = 0;
+//			movement.y = startingHeight;
+//		} else {
+//			movement.y += verticalSpeed;
+//		}
+		//Debug.Log(verticalSpeed);
 		movement.y = verticalSpeed * Time.deltaTime;
 		movement.x = horizontal;
 		movement.z = vertical;
 
 		transform.Translate (movement);
+
 
 		//Debug.Log (IsGrounded ());
 
@@ -244,11 +278,11 @@ public class PlayerController : MonoBehaviour {
 
 	}
 
-	bool IsGrounded()
-	{
-		Debug.Log (distanceToGround + 0.1f + "   " + transform.position);
-		return Physics.Raycast (transform.position, -Vector3.up, distanceToGround + 0.3f);
-
-	}
+//	bool IsGrounded()
+//	{
+//		//Debug.Log (distanceToGround + 0.1f + "   " + transform.position);
+//		return Physics.Raycast (transform.position, -Vector3.up, out hitInfo);
+//
+//	}
 }
 
