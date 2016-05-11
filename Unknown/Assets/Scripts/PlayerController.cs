@@ -18,7 +18,8 @@ public class PlayerController : MonoBehaviour {
 	float distanceToGround;
 	RaycastHit hitInfo;
 
-	float movementSpeed = 5f;
+	//TODO: Cap the movement speed. Right now diagonal speed is greater than horizontal movement
+	float movementSpeed = 15f;
 	public float MovementSpeed {
 		get {
 			return movementSpeed;
@@ -28,14 +29,21 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	float jumpSpeed;
-	public float JumpSpeed {
+	float jumpForce;
+	public float JumpForce {
 		get {
-			return jumpSpeed;
+			return jumpForce;
 		}
 		set {
-			jumpSpeed = value;
+			jumpForce = value;
 		}
+	}
+
+	float mass;
+	public float Mass
+	{
+		get{ return mass; }
+		set{ mass = value; }
 	}
 
 	public float turningSpeed = 60f;
@@ -93,29 +101,16 @@ public class PlayerController : MonoBehaviour {
 		armSwingPointOffset = new Vector3 (0f, 0.4f, 0f);
 		legSwingPointOffset = new Vector3 (0f, -0.5f, 0f);
 		distanceToGround = transform.position.y;
-		JumpSpeed = 10;
+		JumpForce = 30;
+		Mass = 10;
 
 	}
-	// Update is called once per frame
+	//TODO: Comment the code
 	void Update () {
 		float horizontal = Input.GetAxisRaw ("Horizontal") * MovementSpeed * Time.deltaTime;
 		float vertical = Input.GetAxisRaw ("Vertical") * MovementSpeed * Time.deltaTime;
 		camRotation = cam.transform.rotation.eulerAngles.y;
-//		if (IsGrounded()) {
-//			Debug.Log (hitInfo);
-//			if (Input.GetKeyDown (KeyCode.Space)) {
-//				verticalSpeed = JumpSpeed;
-//			} else {
-//				verticalSpeed = 0;
-//			}
-//		} else {
-//			verticalSpeed += gravity * Time.deltaTime;
-//			if (verticalSpeed < terminalVelocity) {
-//				verticalSpeed = terminalVelocity;
-//			}
-//		}
-//		movement.y = verticalSpeed * Time.deltaTime;
-		Physics.Raycast (transform.position, -Vector3.up, out hitInfo, distanceToGround + 0.2f);
+		Physics.Raycast (transform.position, -Vector3.up, out hitInfo, distanceToGround + 0.1f);
 		if (hitInfo.transform) {
 			grounded = hitInfo.transform.tag == "Ground" ? true : false;
 		} else {
@@ -125,34 +120,28 @@ public class PlayerController : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.Space) && grounded) {
 			Debug.Log ("Hit distance: " + hitInfo.distance + "Hit point: " + hitInfo.point + "Hit tag: " + hitInfo.transform.tag + "Hit collider: " + hitInfo.collider);
 			startingHeight = transform.position.y;
-			verticalSpeed = 5;
-		} else {
+			verticalSpeed = JumpForce;
+		}
+		else if (!grounded) {
+			verticalSpeed += gravity * Mass * Time.deltaTime;	
+		}
+		else {
 			verticalSpeed = 0;
 		}
-//		if (verticalSpeed != 0 ) {
-//
-//			verticalSpeed += gravity * Time.deltaTime;
-//			if(verticalSpeed < terminalVelocity)
-//			{
-//				verticalSpeed = terminalVelocity;
-//			}
-//		
-//		}
-//		if (transform.position.y < startingHeight) {
-//			verticalSpeed = 0;
-//			movement.y = startingHeight;
-//		} else {
-//			movement.y += verticalSpeed;
-//		}
-		//Debug.Log(verticalSpeed);
+
 		movement.y = verticalSpeed * Time.deltaTime;
 		movement.x = horizontal;
 		movement.z = vertical;
 
+		if (transform.position.y + movement.y < 1.35f) {
+			Debug.Log (transform.position.y);
+			movement.y = 1.3f - transform.position.y;
+//			if (grounded && transform.position.y != 1.3f) {
+//				movement.y = transform.position.y - 1.3f;
+//			}
+		}
+
 		transform.Translate (movement);
-
-
-		//Debug.Log (IsGrounded ());
 
 		if (horizontal != 0 || vertical != 0) {
 			isMoving = true;		
@@ -277,12 +266,4 @@ public class PlayerController : MonoBehaviour {
 		reset = false;
 
 	}
-
-//	bool IsGrounded()
-//	{
-//		//Debug.Log (distanceToGround + 0.1f + "   " + transform.position);
-//		return Physics.Raycast (transform.position, -Vector3.up, out hitInfo);
-//
-//	}
 }
-
